@@ -1703,6 +1703,26 @@ function AppShell(){
 // ─── ROOT ────────────────────────────────────────────────────
 function AppRouter(){
   const {user}=useContext(Ctx);
+  const [, setSync] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/scout/sync')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.products) {
+          data.products.forEach(liveItem => {
+            const item = SP.find(p => p.name.toLowerCase() === liveItem.name.toLowerCase());
+            if (item) {
+              item.commission = liveItem.payout;
+              item.epc = liveItem.epc;
+            }
+          });
+          setSync(true); // Atualiza os dados na tela automaticamente
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return user?<AppShell/>:<Auth/>;
 }
 export default function App(){
