@@ -1711,7 +1711,7 @@ function AppRouter(){
       .then(res => res.json())
       .then(data => {
         if (data.success && data.products) {
-          // 1. Atualiza produtos existentes ou insere novos
+          // 1. Atualiza produtos existentes ou insere novos da API
           data.products.forEach(liveItem => {
             const existing = SP.find(p => p.name.toLowerCase() === liveItem.name.toLowerCase());
             if (existing) {
@@ -1734,7 +1734,7 @@ function AppRouter(){
             }
           });
 
-          // 2. REGRA DO LIMITE DINÂMICO
+          // 2. Regra do Limite Dinâmico baseado nas plataformas ativas
           const activePlatforms = [...new Set(SP.map(p => p.platform))];
           const totalPlatforms = activePlatforms.length;
 
@@ -1746,7 +1746,7 @@ function AppRouter(){
           // 3. Ordena pelos mais bem qualificados (Gravity)
           SP.sort((a, b) => b.gravity - a.gravity);
 
-          setSync(true); // Recarrega a interface
+          setSync(true); // Recarrega a interface automaticamente
         }
       })
       .catch(() => {});
@@ -1754,30 +1754,7 @@ function AppRouter(){
 
   return user ? <AppShell/> : <Auth/>;
 }
-function AppRouter(){
-  const {user}=useContext(Ctx);
-  const [, setSync] = useState(false);
 
-  useEffect(() => {
-    fetch('/api/scout/sync')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.products) {
-          data.products.forEach(liveItem => {
-            const item = SP.find(p => p.name.toLowerCase() === liveItem.name.toLowerCase());
-            if (item) {
-              item.commission = liveItem.payout;
-              item.epc = liveItem.epc;
-            }
-          });
-          setSync(true); // Atualiza os dados na tela automaticamente
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  return user?<AppShell/>:<Auth/>;
-}
-export default function App(){
+export default function App() {
   return <Provider><AppRouter/></Provider>;
 }
