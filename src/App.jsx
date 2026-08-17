@@ -1711,7 +1711,6 @@ function AppRouter(){
       .then(data => {
         if (data.success && data.products) {
           data.products.forEach(liveItem => {
-            // Comparação flexível para achar "ProDentim" mesmo dentro de nomes longos
             const existing = SP.find(p => 
               p.name.toLowerCase().includes(liveItem.name.toLowerCase()) ||
               liveItem.name.toLowerCase().includes(p.name.toLowerCase())
