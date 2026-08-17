@@ -1701,6 +1701,59 @@ function AppShell(){
 }
  
 // ─── ROOT ────────────────────────────────────────────────────
+// --- ROOT --------------------------------------------------
+function AppRouter(){
+  const {user} = useContext(Ctx);
+  const [, setSync] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/scout/sync')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.products) {
+          // 1. Atualiza produtos existentes ou insere novos
+          data.products.forEach(liveItem => {
+            const existing = SP.find(p => p.name.toLowerCase() === liveItem.name.toLowerCase());
+            if (existing) {
+              existing.commission = liveItem.payout;
+              existing.epc = liveItem.epc;
+            } else {
+              SP.push({
+                id: `auto_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+                name: liveItem.name,
+                platform: liveItem.platform || 'BuyGoods',
+                niche: 'Saude',
+                gravity: 100,
+                commission: liveItem.payout,
+                convRate: liveItem.conversion_rate || 2.0,
+                refundRate: 5,
+                epc: liveItem.epc,
+                trending: true,
+                desc: 'Oferta automatizada'
+              });
+            }
+          });
+
+          // 2. REGRA DO LIMITE DINÂMICO
+          const activePlatforms = [...new Set(SP.map(p => p.platform))];
+          const totalPlatforms = activePlatforms.length;
+
+          let limit = 10;
+          if (totalPlatforms >= 3) limit = 20;
+          else if (totalPlatforms === 2) limit = 10;
+          else if (totalPlatforms === 1) limit = 5;
+
+          // 3. Ordena pelos mais bem qualificados (Gravity)
+          SP.sort((a, b) => b.gravity - a.gravity);
+
+          setSync(true); // Recarrega a interface
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  return user ? <AppShell/> : <Auth/>;
+}
 function AppRouter(){
   const {user}=useContext(Ctx);
   const [, setSync] = useState(false);
