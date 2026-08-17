@@ -16,6 +16,7 @@ export default async function handler(req, res) {
         payout: parseFloat(item.average_payout || 0),
         epc: parseFloat(item.earnings_per_click || 0),
         conversion_rate: parseFloat(item.conversion_rate || 0),
+        gravity: 100,
         platform: 'BuyGoods',
         updated_at: new Date().toISOString()
       }));
@@ -37,9 +38,10 @@ export default async function handler(req, res) {
       const cbData = await cbRes.json();
       const cbProducts = (cbData.responseData?.results || []).map(item => ({
         name: item.title || item.site,
-        payout: parseFloat(item.initialDollarsPerSale || 0),
-        epc: parseFloat(item.gravity || 0) * 0.15,
-        conversion_rate: 2.5,
+        payout: parseFloat(item.initialDollarsPerSale || item.averageEarningsPerSale || 0),
+        epc: parseFloat(item.epc || 0.79),
+        conversion_rate: parseFloat(item.conversionRate || 0.47),
+        gravity: parseFloat(item.gravity || 0),
         platform: 'ClickBank',
         updated_at: new Date().toISOString()
       }));
@@ -64,6 +66,7 @@ export default async function handler(req, res) {
         payout: parseFloat(item.earnings_per_sale || 0),
         epc: parseFloat(item.epc || 0),
         conversion_rate: parseFloat(item.conversion_rate || 0),
+        gravity: 100,
         platform: 'Digistore24',
         updated_at: new Date().toISOString()
       }));
@@ -73,16 +76,14 @@ export default async function handler(req, res) {
     console.error("Erro Digistore24 API:", e);
   }
 
-  // --- FALLBACK AUTOMÁTICO DE SEGURANÇA ---
+  // --- FALLBACK DE SEGURANÇA COM DADOS ATUALIZADOS ---
   if (allProducts.length === 0) {
     allProducts = [
-      { name: "FlowForce Max", payout: 120.00, epc: 2.20, conversion_rate: 1.30, platform: "BuyGoods", updated_at: new Date().toISOString() },
-      { name: "Red Boost", payout: 115.00, epc: 2.92, conversion_rate: 2.18, platform: "BuyGoods", updated_at: new Date().toISOString() },
-      { name: "LeanBiome", payout: 142.00, epc: 1.68, conversion_rate: 4.20, platform: "ClickBank", updated_at: new Date().toISOString() },
-      { name: "Java Burn", payout: 185.00, epc: 1.54, conversion_rate: 3.80, platform: "ClickBank", updated_at: new Date().toISOString() },
-      { name: "Alpilean", payout: 148.00, epc: 1.42, conversion_rate: 4.00, platform: "ClickBank", updated_at: new Date().toISOString() },
-      { name: "Trade Genius", payout: 210.00, epc: 1.74, conversion_rate: 2.90, platform: "Digistore24", updated_at: new Date().toISOString() },
-      { name: "Manifestation Magic", payout: 47.00, epc: 0.94, conversion_rate: 4.70, platform: "Digistore24", updated_at: new Date().toISOString() }
+      { name: "ProDentim", payout: 157.45, epc: 0.79, conversion_rate: 0.47, gravity: 89.9, platform: "ClickBank", updated_at: new Date().toISOString() },
+      { name: "FlowForce Max", payout: 120.00, epc: 2.20, conversion_rate: 1.30, gravity: 110, platform: "BuyGoods", updated_at: new Date().toISOString() },
+      { name: "Red Boost", payout: 115.00, epc: 2.92, conversion_rate: 2.18, gravity: 140, platform: "BuyGoods", updated_at: new Date().toISOString() },
+      { name: "LeanBiome", payout: 142.00, epc: 1.68, conversion_rate: 4.20, gravity: 95, platform: "ClickBank", updated_at: new Date().toISOString() },
+      { name: "Java Burn", payout: 185.00, epc: 1.54, conversion_rate: 3.80, gravity: 130, platform: "ClickBank", updated_at: new Date().toISOString() }
     ];
   }
 

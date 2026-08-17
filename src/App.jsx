@@ -1701,7 +1701,6 @@ function AppShell(){
 }
  
 // ─── ROOT ────────────────────────────────────────────────────
-// --- ROOT --------------------------------------------------
 function AppRouter(){
   const {user} = useContext(Ctx);
   const [, setSync] = useState(false);
@@ -1711,19 +1710,25 @@ function AppRouter(){
       .then(res => res.json())
       .then(data => {
         if (data.success && data.products) {
-          // 1. Atualiza produtos existentes ou insere novos da API
           data.products.forEach(liveItem => {
-            const existing = SP.find(p => p.name.toLowerCase() === liveItem.name.toLowerCase());
+            // Comparação flexível para achar "ProDentim" mesmo dentro de nomes longos
+            const existing = SP.find(p => 
+              p.name.toLowerCase().includes(liveItem.name.toLowerCase()) ||
+              liveItem.name.toLowerCase().includes(p.name.toLowerCase())
+            );
+
             if (existing) {
               existing.commission = liveItem.payout;
               existing.epc = liveItem.epc;
+              if (liveItem.gravity) existing.gravity = liveItem.gravity;
+              if (liveItem.conversion_rate) existing.convRate = liveItem.conversion_rate;
             } else {
               SP.push({
                 id: `auto_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
                 name: liveItem.name,
-                platform: liveItem.platform || 'BuyGoods',
+                platform: liveItem.platform || 'ClickBank',
                 niche: 'Saude',
-                gravity: 100,
+                gravity: liveItem.gravity || 100,
                 commission: liveItem.payout,
                 convRate: liveItem.conversion_rate || 2.0,
                 refundRate: 5,
@@ -1734,7 +1739,7 @@ function AppRouter(){
             }
           });
 
-          // 2. Regra do Limite Dinâmico baseado nas plataformas ativas
+          // Regra do Limite Dinâmico
           const activePlatforms = [...new Set(SP.map(p => p.platform))];
           const totalPlatforms = activePlatforms.length;
 
@@ -1743,10 +1748,10 @@ function AppRouter(){
           else if (totalPlatforms === 2) limit = 10;
           else if (totalPlatforms === 1) limit = 5;
 
-          // 3. Ordena pelos mais bem qualificados (Gravity)
+          // Ordenação pelo Gravity atualizado
           SP.sort((a, b) => b.gravity - a.gravity);
 
-          setSync(true); // Recarrega a interface automaticamente
+          setSync(true);
         }
       })
       .catch(() => {});
